@@ -1,4 +1,4 @@
-// FIFO queue implemented with a linked list
+// FIFO queue implemented with a linked list.
 #include "process.h"
 
 #ifndef QUEUE_H
