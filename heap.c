@@ -28,7 +28,7 @@ void swim(heap* h) {
 }
 
 void add_to_heap(heap* h, process* p) {
-  if (h->size == h->capacity - 1) return;
+  if (h->size == h->capacity) return;
   heap_node* node = (heap_node*)malloc(sizeof(heap_node));
   node->process = p;
   h->nodes[h->size] = node;

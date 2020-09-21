@@ -1,38 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "process.h"
-#include "heap.h"
-#include "queue.h"
-
-int compare_priority(process* p1, process* p2) {
-  return p1->priority - p2->priority;
-}
-
-int compare_burst_time(process* p1, process* p2) {
-  return p1->burst_time - p2->burst_time;
-}
+#include "schedulers.h"
 
 int main() {
-  heap* test_heap = create_heap(100, &compare_priority);
-  heap* test_heap2 = create_heap(100, &compare_burst_time);
-  process* p1 = create_process(-2, 8, 0);
-  process* p2 = create_process(-1, 5, 5);
-  process* p3 = create_process(-3, 2, 8);
-  printf("P1: %p, P2: %p, P3: %p\n", p1, p2, p3);
-  printf("Priority Based Comparison:\n");
-  add_to_heap(test_heap, p1);
-  add_to_heap(test_heap, p2);
-  add_to_heap(test_heap, p3);
-  print_heap(test_heap);
-  printf("Top: %p\n", remove_min_from_heap(test_heap));
-  printf("Top: %p\n", remove_min_from_heap(test_heap));
-  printf("Top: %p\n", remove_min_from_heap(test_heap));
-  printf("Burst Time Based Comparison:\n");
-  add_to_heap(test_heap2, p1);
-  add_to_heap(test_heap2, p2);
-  add_to_heap(test_heap2, p3);
-  print_heap(test_heap2);
-  printf("Top: %p\n", remove_min_from_heap(test_heap2));
-  printf("Top: %p\n", remove_min_from_heap(test_heap2));
-  printf("Top: %p\n", remove_min_from_heap(test_heap2));
+  process** processes = (process**)malloc(sizeof(process*) * 5);
+  processes[0] = create_process(0, 0, 8, 0);
+  processes[1] = create_process(1, 0, 5, 3);
+  processes[2] = create_process(2, 0, 10, 4);
+  processes[3] = create_process(1, 0, 9, 6);
+  processes[4] = create_process(2, 0, 7, 11);
+  first_come_first_serve(processes, 5);
   return 0;
 }
