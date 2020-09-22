@@ -79,8 +79,8 @@ void admit_processes(
   }
 }
 
-heap* get_process_heap(process** processes, int capacity, int (*compare)(process* p1, process* p2)) {
-  heap* arrival_time_pq = create_heap(capacity, compare);
+heap* get_arrival_time_pq(process** processes, int capacity) {
+  heap* arrival_time_pq = create_heap(capacity, &compare_arrival_time);
   for (int i = 0; i < capacity; ++i) {
     add_to_heap(arrival_time_pq, processes[i]);
   }
@@ -98,7 +98,7 @@ void first_come_first_serve(process** processes, int capacity) {
   printf("First Come First Serve:\n");
   int current_time = 0;
   int idle_time = 0;
-  heap* arrival_time_pq = get_process_heap(processes, capacity, &compare_arrival_time);
+  heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
   while (arrival_time_pq->size > 0) {
     int next_min_arrival_time = get_min_from_heap(arrival_time_pq)->arrival_time;
     if (current_time < next_min_arrival_time) {
@@ -119,7 +119,7 @@ void shortest_job_first(process** processes, int capacity) {
   printf("Shortest Job First:\n");
   int current_time = 0;
   int idle_time = 0;
-  heap* arrival_time_pq = get_process_heap(processes, capacity, &compare_arrival_time);
+  heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
   heap* burst_time_pq = create_heap(capacity, &compare_burst_time);
   while (arrival_time_pq->size > 0 || burst_time_pq->size > 0) {
     skip_idle_time(arrival_time_pq, &current_time, &idle_time, burst_time_pq);
@@ -141,7 +141,7 @@ void round_robin(process** processes, int capacity, int time_quanta) {
   for (int i = 0; i < capacity; ++i) {
     burst_time_buffer[processes[i]->id - 1] = processes[i]->burst_time;
   }
-  heap* arrival_time_pq = get_process_heap(processes, capacity, &compare_arrival_time);
+  heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
   queue* process_q = create_queue();
   while (arrival_time_pq->size > 0 || process_q->size > 0) {
     skip_idle_time(arrival_time_pq, &current_time, &idle_time, process_q);
@@ -185,7 +185,7 @@ void preemptive_priority(process** processes, int capacity) {
   for (int i = 0; i < capacity; ++i) {
     burst_time_buffer[processes[i]->id - 1] = processes[i]->burst_time;
   }
-  heap* arrival_time_pq = get_process_heap(processes, capacity, &compare_arrival_time);
+  heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
   heap* pq = create_heap(capacity, &compare_priority);  
   while (arrival_time_pq->size > 0 || pq->size > 0) {
     skip_idle_time(arrival_time_pq, &current_time, &idle_time, pq);
@@ -219,7 +219,7 @@ void preemptive_shortest_job_first(process** processes, int capacity) {
   for (int i = 0; i < capacity; ++i) {
     burst_time_buffer[processes[i]->id - 1] = processes[i]->burst_time;
   }
-  heap* arrival_time_pq = get_process_heap(processes, capacity, &compare_arrival_time);
+  heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
   heap* burst_time_pq = create_heap(capacity, &compare_burst_time);  
   while (arrival_time_pq->size > 0 || burst_time_pq->size > 0) {
     skip_idle_time(arrival_time_pq, &current_time, &idle_time, burst_time_pq);
