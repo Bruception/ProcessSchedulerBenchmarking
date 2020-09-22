@@ -12,5 +12,8 @@ int main() {
   processes[4] = create_process(5, 0, 7, 11);
   first_come_first_serve(processes, 5);
   shortest_job_first(processes, 5);
+  round_robin(processes, 5, 5);
+  preemptive_priority(processes, 5);
+  preemptive_shortest_job_first(processes, 5);
   return 0;
 }

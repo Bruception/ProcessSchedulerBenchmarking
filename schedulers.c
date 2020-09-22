@@ -36,6 +36,16 @@ double get_average_wait_time(process** processes, int capacity) {
   return average_wait_time / capacity;
 }
 
+double get_average_turnaround_time(process** processes, int capacity) {
+  double average_turnaround_time = 0;
+  for (int i = 0; i < capacity; ++i) {
+    int turnaround_time = processes[i]->end_time - processes[i]->arrival_time;
+    average_turnaround_time += turnaround_time;
+  }
+  return average_turnaround_time / capacity;  
+}
+
+
 void reset_processes(process** processes, int capacity) {
   for (int i = 0; i < capacity; ++i) {
     processes[i]->start_time = 0;
@@ -56,9 +66,9 @@ heap* get_process_heap(process** processes, int capacity, int (*compare)(process
 }
 
 void first_come_first_serve(process** processes, int capacity) {
+  printf("First Come First Serve:\n");
   int current_time = 0;
   int idle_time = 0;
-  double average_turnaround_time = 0;
   heap* arrival_time_pq = get_process_heap(processes, capacity, &compare_arrival_time);
   while (arrival_time_pq->size > 0) {
     int next_min_arrival_time = get_min_from_heap(arrival_time_pq)->arrival_time;
@@ -72,21 +82,17 @@ void first_come_first_serve(process** processes, int capacity) {
     printf("Process with id: %d is running...\n", current_process->id);
     current_time += current_process->burst_time;
     current_process->end_time = current_time;
-    int turnaround_time = current_time - current_process->arrival_time;
-    average_turnaround_time += turnaround_time;
-    printf("\tTurnaround time for Process with id: %d : %d\n", current_process->id, turnaround_time);
   }
-  average_turnaround_time /= capacity;
-  printf("Average turnaround time: %.2f\n", average_turnaround_time);
+  printf("Average turnaround time: %.2f\n", get_average_turnaround_time(processes, capacity));
   printf("Average wait time: %.2f\n", get_average_wait_time(processes, capacity));
-  printf("CPU Utilization: %.2f%%\n", get_utilization(current_time, idle_time));
+  printf("CPU Utilization: %.2f%%\n\n", get_utilization(current_time, idle_time));
   reset_processes(processes, capacity);
 }
 
 void shortest_job_first(process** processes, int capacity) {
+  printf("Shortest Job First:\n");
   int current_time = 0;
   int idle_time = 0;
-  double average_turnaround_time = 0;
   heap* arrival_time_pq = get_process_heap(processes, capacity, &compare_arrival_time);
   heap* burst_time_pq = create_heap(capacity, &compare_burst_time);
   while (arrival_time_pq->size > 0 || burst_time_pq->size > 0) {
@@ -109,24 +115,71 @@ void shortest_job_first(process** processes, int capacity) {
     printf("Process with id: %d is running...\n", current_process->id);
     current_time += current_process->burst_time;
     current_process->end_time = current_time;
-    int turnaround_time = current_time - current_process->arrival_time;
-    average_turnaround_time += turnaround_time;
-    printf("\tTurnaround time for Process with id: %d : %d\n", current_process->id, turnaround_time);
   }
-  average_turnaround_time /= capacity;
-  printf("Average turnaround time: %.2f\n", average_turnaround_time);
+  printf("Average turnaround time: %.2f\n", get_average_turnaround_time(processes, capacity));
   printf("Average wait time: %.2f\n", get_average_wait_time(processes, capacity));
-  printf("CPU Utilization: %.2f%%\n", get_utilization(current_time, idle_time));
+  printf("CPU Utilization: %.2f%%\n\n", get_utilization(current_time, idle_time));
   reset_processes(processes, capacity);
 }
 
 void round_robin(process** processes, int capacity, int time_quanta) {
-
+  printf("Round Robin:\n");
+  int current_time = 0;
+  int idle_time = 0;
+  int burst_time_buffer[capacity];
+  for (int i = 0; i < capacity; ++i) {
+    burst_time_buffer[processes[i]->id - 1] = processes[i]->burst_time;
+  }
+  heap* arrival_time_pq = get_process_heap(processes, capacity, &compare_arrival_time);
+  queue* process_q = create_queue();
+  while (arrival_time_pq->size > 0 || process_q->size > 0) {
+    if (arrival_time_pq->size > 0) {
+      int next_min_arrival_time = get_min_from_heap(arrival_time_pq)->arrival_time;
+      if (current_time < next_min_arrival_time && process_q->size == 0) {
+        int difference = next_min_arrival_time - current_time;
+        idle_time += difference;
+        current_time += difference;
+      }
+    } 
+    while (
+      arrival_time_pq->size > 0
+      && get_min_from_heap(arrival_time_pq)->arrival_time <= current_time
+    ) {
+      add_to_queue(process_q, remove_min_from_heap(arrival_time_pq));
+    }
+    while (process_q->size > 0) {
+      process* current_process = remove_from_queue(process_q);
+      printf("Process with id: %d is running...\n", current_process->id);
+      int remaining_burst_time = burst_time_buffer[current_process->id - 1];
+      if (remaining_burst_time > time_quanta) {
+        current_time += time_quanta;
+        burst_time_buffer[current_process->id - 1] -= time_quanta;
+      } else {
+        current_time += remaining_burst_time;
+        current_process->end_time = current_time;
+        burst_time_buffer[current_process->id - 1] = 0;
+      }
+      while (
+        arrival_time_pq->size > 0
+        && get_min_from_heap(arrival_time_pq)->arrival_time <= current_time
+      ) {
+        add_to_queue(process_q, remove_min_from_heap(arrival_time_pq));
+      }
+      if (remaining_burst_time > time_quanta) {
+        add_to_queue(process_q, current_process);
+      }
+    }
+  }
+  printf("Average turnaround time: %.2f\n", get_average_turnaround_time(processes, capacity));
+  printf("Average wait time: %.2f\n", get_average_wait_time(processes, capacity));
+  printf("CPU Utilization: %.2f%%\n\n", get_utilization(current_time, idle_time));
+  reset_processes(processes, capacity);
 }
 
 void preemptive_priority(process** processes, int capacity) {
+  
 }
 
 void preemptive_shortest_job_first(process** processes, int capacity) {
-  
+
 }
