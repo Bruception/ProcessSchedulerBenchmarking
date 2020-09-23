@@ -7,7 +7,8 @@ process* create_process(int id, int priority, int burst_time, int arrival_time) 
   new_process->priority = priority;
   new_process->burst_time = burst_time;
   new_process->arrival_time = arrival_time;
-  new_process->start_time = 0;
+  // Indicate that the process hasn't been scheduled.
+  new_process->start_time = -1;
   new_process->end_time = 0;
   return new_process;
 }

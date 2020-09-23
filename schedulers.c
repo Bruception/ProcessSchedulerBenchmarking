@@ -39,21 +39,30 @@ double get_average_turnaround_time(process** processes, int capacity) {
     int turnaround_time = processes[i]->end_time - processes[i]->arrival_time;
     average_turnaround_time += turnaround_time;
   }
-  return average_turnaround_time / capacity;  
+  return average_turnaround_time / capacity;
+}
+
+// Response time = first time in CPU - arrival time
+double get_average_response_time(process** processes, int capacity) {
+  double average_response_time = 0;
+  for (int i = 0; i < capacity; ++i) {
+    int response_time = processes[i]->start_time - processes[i]->arrival_time;
+    average_response_time += response_time;
+  }
+  return average_response_time / capacity;
 }
 
 void reset_processes(process** processes, int capacity) {
   for (int i = 0; i < capacity; ++i) {
-    processes[i]->start_time = 0;
+    processes[i]->start_time = -1;
     processes[i]->end_time = 0;
   }
 }
 
-void skip_idle_time(heap* arrival_time_pq, int* current_time, int* idle_time, void* q) {
-  list* l = q;
+void skip_idle_time(heap* arrival_time_pq, int* current_time, int* idle_time, int q_size) {
   if (arrival_time_pq->size > 0) {
     int next_min_arrival_time = get_min_from_heap(arrival_time_pq)->arrival_time;
-    if (*current_time < next_min_arrival_time && l->size == 0) {
+    if (*current_time < next_min_arrival_time && q_size <= 0) {
       int difference = next_min_arrival_time - *current_time;
       *idle_time += difference;
       *current_time += difference;
@@ -90,6 +99,7 @@ heap* get_arrival_time_pq(process** processes, int capacity) {
 void getResults(process** processes, int capacity, int current_time, int idle_time) {
   printf("Average turnaround time: %.2f\n", get_average_turnaround_time(processes, capacity));
   printf("Average wait time: %.2f\n", get_average_wait_time(processes, capacity));
+  printf("Average response time: %.2f\n", get_average_response_time(processes, capacity));
   printf("CPU Utilization: %.2f%%\n\n", get_utilization(current_time, idle_time));
   reset_processes(processes, capacity);
 }
@@ -102,9 +112,9 @@ void first_come_first_serve(process** processes, int capacity) {
   while (arrival_time_pq->size > 0) {
     int next_min_arrival_time = get_min_from_heap(arrival_time_pq)->arrival_time;
     if (current_time < next_min_arrival_time) {
-        int difference = next_min_arrival_time - current_time;
-        idle_time += difference;
-        current_time += difference;
+      int difference = next_min_arrival_time - current_time;
+      idle_time += difference;
+      current_time += difference;
     }
     process* current_process = remove_min_from_heap(arrival_time_pq);
     current_process->start_time = current_time;
@@ -122,7 +132,7 @@ void shortest_job_first(process** processes, int capacity) {
   heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
   heap* burst_time_pq = create_heap(capacity, &compare_burst_time);
   while (arrival_time_pq->size > 0 || burst_time_pq->size > 0) {
-    skip_idle_time(arrival_time_pq, &current_time, &idle_time, burst_time_pq);
+    skip_idle_time(arrival_time_pq, &current_time, &idle_time, burst_time_pq->size);
     admit_processes(arrival_time_pq, current_time, burst_time_pq, &add_to_heap);
     process* current_process = remove_min_from_heap(burst_time_pq);
     current_process->start_time = current_time;
@@ -144,7 +154,7 @@ void round_robin(process** processes, int capacity, int time_quanta) {
   heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
   queue* process_q = create_queue();
   while (arrival_time_pq->size > 0 || process_q->size > 0) {
-    skip_idle_time(arrival_time_pq, &current_time, &idle_time, process_q);
+    skip_idle_time(arrival_time_pq, &current_time, &idle_time, process_q->size);
     while (
       arrival_time_pq->size > 0
       && get_min_from_heap(arrival_time_pq)->arrival_time <= current_time
@@ -153,6 +163,9 @@ void round_robin(process** processes, int capacity, int time_quanta) {
     }
     while (process_q->size > 0) {
       process* current_process = remove_from_queue(process_q);
+      if (current_process->start_time == -1) {
+        current_process->start_time = current_time;
+      }
       printf("Process with id: %d is running...\n", current_process->id);
       int remaining_burst_time = burst_time_buffer[current_process->id - 1];
       if (remaining_burst_time > time_quanta) {
@@ -186,13 +199,16 @@ void preemptive_priority(process** processes, int capacity) {
     burst_time_buffer[processes[i]->id - 1] = processes[i]->burst_time;
   }
   heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
-  heap* pq = create_heap(capacity, &compare_priority);  
+  heap* pq = create_heap(capacity, &compare_priority);
   while (arrival_time_pq->size > 0 || pq->size > 0) {
-    skip_idle_time(arrival_time_pq, &current_time, &idle_time, pq);
+    skip_idle_time(arrival_time_pq, &current_time, &idle_time, pq->size);
     admit_processes(arrival_time_pq, current_time, pq, &add_to_heap);
     process* prev;
     while (pq->size > 0) {
       process* current_process = remove_min_from_heap(pq);
+      if (current_process->start_time == -1) {
+        current_process->start_time = current_time;
+      }
       if (current_process != prev) {
         printf("Process with id: %d is running...\n", current_process->id);
       }
@@ -220,13 +236,16 @@ void preemptive_shortest_job_first(process** processes, int capacity) {
     burst_time_buffer[processes[i]->id - 1] = processes[i]->burst_time;
   }
   heap* arrival_time_pq = get_arrival_time_pq(processes, capacity);
-  heap* burst_time_pq = create_heap(capacity, &compare_burst_time);  
+  heap* burst_time_pq = create_heap(capacity, &compare_burst_time);
   while (arrival_time_pq->size > 0 || burst_time_pq->size > 0) {
-    skip_idle_time(arrival_time_pq, &current_time, &idle_time, burst_time_pq);
+    skip_idle_time(arrival_time_pq, &current_time, &idle_time, burst_time_pq->size);
     admit_processes(arrival_time_pq, current_time, burst_time_pq, &add_to_heap);
     process* prev;
     while (burst_time_pq->size > 0) {
       process* current_process = remove_min_from_heap(burst_time_pq);
+      if (current_process->start_time == -1) {
+        current_process->start_time = current_time;
+      }
       if (current_process != prev) {
         printf("Process with id: %d is running...\n", current_process->id);
       }
