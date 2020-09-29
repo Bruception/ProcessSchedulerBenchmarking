@@ -19,5 +19,6 @@ queue* create_queue();
 void add_to_queue(queue* q, void* data);
 void* remove_from_queue(queue* q);
 void print_queue(queue* q);
+void* get_front(queue* q);
 
 #endif

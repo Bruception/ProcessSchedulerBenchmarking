@@ -43,6 +43,12 @@ void* remove_from_queue(queue* q) {
   return p;
 }
 
+// Get first element in quque
+void* get_front(queue* q) {
+  if (q->size == 0) return NULL;
+  return q->head->next->data;
+}
+
 // Print queue from head to tail.
 void print_queue(queue* q) {
   queue_node* current = q->head->next;

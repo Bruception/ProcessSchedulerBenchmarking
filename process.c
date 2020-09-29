@@ -10,5 +10,6 @@ process* create_process(int id, int priority, int burst_time, int arrival_time) 
   // Indicate that the process hasn't been scheduled.
   new_process->start_time = -1;
   new_process->end_time = 0;
+  new_process->intervals = create_queue();
   return new_process;
 }
