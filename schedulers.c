@@ -104,7 +104,7 @@ void getResults(process** processes, int capacity, int current_time, int idle_ti
   reset_processes(processes, capacity);
 }
 
-void first_come_first_serve(process** processes, int capacity) {
+void first_come_first_serve(process** processes, int capacity, FILE* fp) {
   printf("First Come First Serve:\n");
   int current_time = 0;
   int idle_time = 0;
@@ -125,7 +125,7 @@ void first_come_first_serve(process** processes, int capacity) {
   getResults(processes, capacity, current_time, idle_time);
 }
 
-void shortest_job_first(process** processes, int capacity) {
+void shortest_job_first(process** processes, int capacity, FILE* fp) {
   printf("Shortest Job First:\n");
   int current_time = 0;
   int idle_time = 0;
@@ -143,7 +143,7 @@ void shortest_job_first(process** processes, int capacity) {
   getResults(processes, capacity, current_time, idle_time);
 }
 
-void round_robin(process** processes, int capacity, int time_quanta) {
+void round_robin(process** processes, int capacity, int time_quanta, FILE* fp) {
   printf("Round Robin:\n");
   int current_time = 0;
   int idle_time = 0;
@@ -159,10 +159,10 @@ void round_robin(process** processes, int capacity, int time_quanta) {
       arrival_time_pq->size > 0
       && get_min_from_heap(arrival_time_pq)->arrival_time <= current_time
     ) {
-      add_to_queue(process_q, remove_min_from_heap(arrival_time_pq));
+      add_to_queue(process_q, (void*)remove_min_from_heap(arrival_time_pq));
     }
     while (process_q->size > 0) {
-      process* current_process = remove_from_queue(process_q);
+      process* current_process = (process*)remove_from_queue(process_q);
       if (current_process->start_time == -1) {
         current_process->start_time = current_time;
       }
@@ -180,17 +180,17 @@ void round_robin(process** processes, int capacity, int time_quanta) {
         arrival_time_pq->size > 0
         && get_min_from_heap(arrival_time_pq)->arrival_time <= current_time
       ) {
-        add_to_queue(process_q, remove_min_from_heap(arrival_time_pq));
+        add_to_queue(process_q, (void*)remove_min_from_heap(arrival_time_pq));
       }
       if (remaining_burst_time > time_quanta) {
-        add_to_queue(process_q, current_process);
+        add_to_queue(process_q, (void*)current_process);
       }
     }
   }
   getResults(processes, capacity, current_time, idle_time);
 }
 
-void preemptive_priority(process** processes, int capacity) {
+void preemptive_priority(process** processes, int capacity, FILE* fp) {
   printf("Preemptive Priority:\n");
   int current_time = 0;
   int idle_time = 0;
@@ -227,7 +227,7 @@ void preemptive_priority(process** processes, int capacity) {
   getResults(processes, capacity, current_time, idle_time);
 }
 
-void preemptive_shortest_job_first(process** processes, int capacity) {
+void preemptive_shortest_job_first(process** processes, int capacity, FILE* fp) {
   printf("Preemptive Shortest Job First:\n");
   int current_time = 0;
   int idle_time = 0;

@@ -25,4 +25,4 @@ main.o : main.c
 $(OBJS) : $(HDRS)
 
 clean:
-	rm *.o main.out
+	rm *.o main.out *.csv

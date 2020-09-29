@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include "queue.h"
 
-void init_queue_node(queue_node* node, queue_node* next, queue_node* prev, process* process) {
+void init_queue_node(queue_node* node, queue_node* next, queue_node* prev, void* data) {
   node->next = next;
   node->prev = prev;
-  node->process = process;
+  node->data = data;
 }
 
 queue* create_queue() {
@@ -20,24 +20,24 @@ queue* create_queue() {
 }
 
 // Adds to the back of the queue.
-void add_to_queue(queue* q, process* process) {
+void add_to_queue(queue* q, void* data) {
   queue_node* new_node = (queue_node*)malloc(sizeof(queue_node));
   queue_node* old_tail = q->tail->prev;
   q->tail->prev = new_node;
   new_node->prev = old_tail;
   new_node->next = q->tail;
   old_tail->next = new_node;
-  new_node->process = process;
+  new_node->data = data;
   ++q->size;
 }
 
 // Removes from the front of the queue.
-process* remove_from_queue(queue* q) {
+void* remove_from_queue(queue* q) {
   queue_node* old_head = q->head->next;
   if (old_head == q->tail) return NULL;
   q->head->next = old_head->next;
   q->head->next->prev = q->head;
-  process* p = old_head->process;
+  void* p = old_head->data;
   free(old_head);
   --q->size;
   return p;
@@ -49,7 +49,7 @@ void print_queue(queue* q) {
   printf("Head: %p, Next: %p, Prev: %p\n", q->head, q->head->next, q->head->prev);
   while(current != NULL && current != q->tail) {
     printf("\tNode: %p, Next: %p, Prev: %p\n", current, current->next, current->prev);
-    printf("\t\tProcess: %p\n", current->process);
+    printf("\t\tData: %p\n", current->data);
     current = current->next;
   }
   printf("Tail: %p, Next: %p, Prev: %p\n\n", q->tail, q->tail->next, q->tail->prev);

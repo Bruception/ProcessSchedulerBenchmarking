@@ -1,6 +1,10 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+typedef struct interval_struct {
+  
+} interval;
+
 typedef struct process_struct {
   int priority;
   int burst_time;
