@@ -5,10 +5,6 @@
 #include "heap.h"
 #include "queue.h"
 
-typedef struct list_struct {
-  int size;
-} list;
-
 int compare_priority(process* p1, process* p2) {
   return p1->priority - p2->priority;
 }
