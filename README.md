@@ -1,4 +1,4 @@
-# ProcessSchedulerBenchmarking
+# Scheduler Benchmarking
 
 # Compilation
 ```make``` then ```./main.out```
