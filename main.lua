@@ -62,7 +62,7 @@ local chartData = {
   width = 720,
   height = 400,
   timeq = 10,
-  scale = 12,
+  scale = 5,
 }
 -- scale = 1 unit = x pixels
 
@@ -98,8 +98,7 @@ local function renderChart(chart, timeline)
 
   for i, v in ipairs(timeline.data) do
     local py = chart.y + ((i - 1) * labelHeight)
-    lg.print(v.label, chart.x - 50, py + 15)
-
+    lg.print(v.label, chart.x - 25, py + 15)
     lg.setColor(norm(v.color or {0, 0, 0}))
     for i, vv in ipairs(v.time) do
       local tx = vv[1];
@@ -121,5 +120,10 @@ end
 
 function love.keypressed(key)
   local amount = (key == 'left') and -1 or ((key == 'right') and 1 or 0)
+  local scale = (key == 'up') and 1 or ((key == 'down') and -1 or 0)
   currentTimeline = (currentTimeline + amount) % #timelines
+  chartData.scale = math.min(math.max(chartData.scale + scale, 1), 20)
+  if (key == 'c') then
+    lg.captureScreenshot(timelines[currentTimeline + 1].title .. '.png')
+  end
 end

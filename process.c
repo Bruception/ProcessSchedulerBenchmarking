@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "process.h"
 
-process* create_process(int id, int priority, int burst_time, int arrival_time) {
+process* create_process(int id, int arrival_time, int burst_time, int priority) {
   process* new_process = (process*)malloc(sizeof(process));
   new_process->id = id;
   new_process->priority = priority;
