@@ -127,6 +127,7 @@ void write_results(process** processes, int capacity, FILE* fp) {
     }
     fprintf(fp, "\n");
   }
+  fprintf(fp, "+\n");
 }
 
 void get_results(process** processes, int capacity, int current_time, int idle_time, FILE* fp) {
