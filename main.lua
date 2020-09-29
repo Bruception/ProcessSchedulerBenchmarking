@@ -82,7 +82,8 @@ local function renderChart(chart, timeline)
   lg.line(x, y + height, x + width, y + height)
 
   local labelHeight = height / (#timeline.data)
-  lg.print(timeline.title)
+  local titleWidth = lg.getFont():getWidth(timeline.title)
+  lg.print(timeline.title, (chart.x + chart.width * 0.5) - titleWidth * 0.5, 50)
 
   lg.setColor(0, 0, 0, 0.15)
   for i = 1, math.ceil(width / (timeq * scale)) do
