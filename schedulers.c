@@ -6,6 +6,9 @@
 #include "queue.h"
 
 int compare_priority(process* p1, process* p2) {
+  if (p1->priority == p2->priority) {
+    return p1->arrival_time - p2->arrival_time;
+  }
   return p1->priority - p2->priority;
 }
 
